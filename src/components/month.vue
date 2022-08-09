@@ -1,23 +1,24 @@
 <template>
   <div class="main__row">
-    <div class="item" v-for="(item, i) in date" :key="i" @click="openModal(item, i)">
-      <div>
-        <div class="item__heading"> {{ i > 6 ? item : getWeeks(i, item) }} </div>
-        <div class="item__title" v-html="$store.getters.getEventsToDate(uuid / i)"></div>
-        <div class="item__names" v-html="$store.getters.getNamesToDate(uuid / i)"></div>
+    <div class="item" v-for="(day, i) in $store.getters.getMonth" :key="i" @click="openModal(day, i)">
+      <div :class="{'item__current': $store.getters.getCurrentDay === day}">
+        <div class="item__heading" :class="i">{{ getWeek(i, day) }}</div>
+        <div class="item__title" v-html="getEventsToDate(day, i)"></div>
+        <div class="item__names" v-html="getNamesToDate(day, i)"></div>
         </div>
       </div>
     <modal
       v-if="showModal"
       @close="eventClose"
-      :date="dateEvent"
-      :uuid="eventUuid"
+      :day="day"
+      :index="index"
     />
   </div>
 </template>
 
 <script>
 import modal from '../components/modal.vue'
+import { getKey } from '../util/util.js'
 export default {
   name: 'month',
 
@@ -27,10 +28,9 @@ export default {
 
   data: () => ({
     showModal: false,
-    eventUuid: null,
-    dateEvent: 0,
-    uuid: 100,
-    weeks: {
+    day: 0,
+    index: null,
+    week: {
       0: 'Понедель­ник',
       1: 'Вторник',
       2: 'Среда',
@@ -41,24 +41,29 @@ export default {
     }
   }),
 
-  props: {
-    date: Array
-  },
-
   methods: {
-    openModal (date, i) {
-      this.$store.commit('updateTempEvents')
-      this.dateEvent = date
-      this.eventUuid = this.uuid / i
-      this.showModal = true
-    },
-
-    getWeeks (i, date) {
-      return `${this.weeks[i]}, ${date}`
-    },
-
     eventClose () {
       this.showModal = false
+    },
+
+    getEventsToDate (day, i) {
+      return this.$store.getters.getEventsToDate(getKey(day, i))
+    },
+
+    getNamesToDate (day, i) {
+      return this.$store.getters.getNamesToDate(getKey(day, i))
+    },
+
+    getWeek (i, date) {
+      if (i > 6) return date
+      return `${this.week[i]}, ${date}`
+    },
+
+    openModal (day, i) {
+      this.$store.commit('updateTempEvents')
+      this.day = day
+      this.index = i
+      this.showModal = true
     }
   }
 }
@@ -72,6 +77,11 @@ export default {
   background-color: #FFFFFF;
   border: 1px solid #292929;
   padding: 8px;
+}
+
+.item__current {
+  width: 100%;
+  background-color: #9dcbee;
 }
 .item__heading {
   height: 16px;

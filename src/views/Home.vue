@@ -13,31 +13,35 @@
             <use xlink:href="icons.svg#search"></use>
           </svg>
           <input
+            v-model="search"
             class="header__input"
             type="text"
             placeholder="Placeholder"
           />
+          <div class="header__list">
+            <find/>
+        </div>
         </div>
       </div>
     </div>
 
     <div class="main">
       <div class="menu">
-        <button class="menu__btn-previous">
+        <button class="menu__btn-previous" @click="previous">
           <svg class="menu__svg">
             <use xlink:href="icons.svg#left"></use>
           </svg>
         </button>
-        <div class="menu__display"> Ноябрь 2021 </div>
-        <button class="menu__btn-next">
+        <div class="menu__display"> {{ $store.getters.getDisplay }} </div>
+        <button class="menu__btn-next" @click="next">
           <svg class="menu__svg">
             <use xlink:href="icons.svg#right"></use>
           </svg>
         </button>
-        <button class="menu__text"> Сегодня </button>
+        <button class="menu__text" @click="initialiseDate"> Сегодня </button>
       </div>
       <div class="main__row">
-          <card-days :date="date" />
+        <card-days />
       </div>
     </div>
   </div>
@@ -45,38 +49,54 @@
 
 <script>
 import cardDays from '../components/month.vue'
+import find from '../components/find.vue'
 export default {
   name: 'Home',
 
   components: {
-    cardDays
+    cardDays,
+    find
   },
 
   data: () => ({
-    date: [27, 28, 29, 30]
+    search: ''
   }),
 
-  methods: {
-    generateData () {
-      for (let i = 0; i < 31; i++) {
-        this.date.push(i + 1)
-      }
+  watch: {
+    search (search) {
+      this.$store.dispatch('find', search)
     }
   },
 
+  methods: {
+    initialiseDate () {
+      this.$store.dispatch('initialiseDate')
+      this.$store.dispatch('setMonth')
+    },
+
+    previous () {
+      this.$store.commit('decrementMonth')
+      this.$store.dispatch('setMonth')
+    },
+
+    next () {
+      this.$store.commit('incrementMonth')
+      this.$store.dispatch('setMonth')
+    }
+
+  },
+
   created () {
-    this.generateData()
+    this.initialiseDate()
   }
 }
 </script>
 
 <style scoped>
-
-.layout {
-  /* overflow: hidden; */
-  /* background-color: ghostwhite; */
+.wrap {
+  max-width: 1440px;
+  margin: 0 auto;
 }
-
 .icon {
   position: absolute;
   height: 29px;
@@ -85,13 +105,10 @@ export default {
   padding-right: 63px;
   transform: translate(-50%,-50%);
 }
-.wrap {
-  max-width: 1440px;
-  margin: 0 auto;
-}
 
 .header {
   background-color: #F4F4F4;
+  text-align: right;
 }
 
 .header__row {
@@ -118,6 +135,11 @@ export default {
   padding-bottom: 21px;
 }
 
+.header__list {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
 .header__btn {
   background: #0271C7;
   font-family: 'Roboto', sans-serif;
@@ -133,8 +155,6 @@ export default {
 }
 
 .main {
-  /* border: 1px solid #292929;
-  background-color: #FFFFFF; */
 }
 
 .menu {
@@ -165,7 +185,8 @@ export default {
   font-size: 18px;
   color: #292929;
   padding-top: 3px;
-  margin: 0 24px;
+  text-align: center;
+  min-width: 150px;
 }
 
 .menu__text {

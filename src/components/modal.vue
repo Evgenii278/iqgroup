@@ -8,7 +8,7 @@
           <div class="modal-body">
             <div class="popup">
               <input v-model="event" class="popup__event popup__input" placeholder="Событие">
-              <input class="popup__date popup__input" :placeholder="`${date} Ноября 2021`" disabled>
+              <input class="popup__date popup__input" :placeholder="getDate()" disabled>
               <input v-model="names" class="popup__members popup__input" placeholder="Имена участников">
               <textarea v-model="description" class="popup__description popup__input" placeholder="Описание"></textarea>
 
@@ -25,13 +25,14 @@
 </template>
 
 <script>
+import { getKey } from '../util/util.js'
 export default {
   name: 'month',
 
   computed: {
     event: {
       get () {
-        return this.$store.getters.getEventsToDate(this.uuid)
+        return this.$store.getters.getEventsToDate(getKey(this.day, this.index))
       },
 
       set (event) {
@@ -40,7 +41,7 @@ export default {
     },
     names: {
       get () {
-        return this.$store.getters.getNamesToDate(this.uuid)
+        return this.$store.getters.getNamesToDate(getKey(this.day, this.index))
       },
 
       set (names) {
@@ -50,7 +51,7 @@ export default {
 
     description: {
       get () {
-        return this.$store.getters.getDescriptionToDate(this.uuid)
+        return this.$store.getters.getDescriptionToDate(getKey(this.day, this.index))
       },
 
       set (description) {
@@ -60,20 +61,23 @@ export default {
   },
 
   methods: {
+    getDate () {
+      return getKey(this.day, this.index)
+    },
+
     saveDate () {
-      this.$store.commit('saveEventsDate', this.uuid)
+      this.$store.commit('saveEventsDate', getKey(this.day, this.index))
       this.$emit('close')
     },
 
     remove () {
-      console.log('test___')
-      this.$store.commit('removeEventsDate', this.uuid)
+      this.$store.commit('removeEventsDate', getKey(this.day, this.index))
     }
   },
 
   props: {
-    date: Number,
-    uuid: Number
+    day: Number,
+    index: Number
   }
 
 }

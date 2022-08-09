@@ -1,7 +1,8 @@
 export default {
   state: {
     events: {},
-    tempEvents: {}
+    tempEvents: {},
+    arrFind: []
   },
 
   mutations: {
@@ -25,14 +26,23 @@ export default {
       state.tempEvents = {}
     },
 
-    saveEventsDate (state, date) {
-      const event = state.events[date]
-      state.events[date] = { ...event, ...state.tempEvents }
+    updateFind (state, find) {
+      state.arrFind = find
+    },
+
+    saveEventsDate (state, key) {
+      const event = state.events[key]
+
+      state.events[key] = {
+        ...event,
+        ...state.tempEvents,
+        date: key.split(',')[0]
+      }
       localStorage.setItem('events', JSON.stringify(state.events))
     },
 
-    removeEventsDate (state, date) {
-      state.events[date] = {}
+    removeEventsDate (state, key) {
+      state.events[key] = {}
       localStorage.setItem('events', JSON.stringify(state.events))
     }
   },
@@ -42,22 +52,34 @@ export default {
       return state.tempEvents
     },
 
-    getEventsToDate: (state) => (date) => {
-      const event = state.events[date]
+    getEventsToDate: (state) => (key) => {
+      const event = state.events[key]
       if (event === undefined) return ''
       return event.event
     },
 
-    getNamesToDate: (state) => (date) => {
-      const event = state.events[date]
+    getNamesToDate: (state) => (key) => {
+      const event = state.events[key]
       if (event === undefined) return ''
       return event.names
     },
 
-    getDescriptionToDate: (state) => (date) => {
-      const event = state.events[date]
+    getDescriptionToDate: (state) => (key) => {
+      const event = state.events[key]
       if (event === undefined) return ''
       return event.description
+    },
+
+    getFind (state) {
+      return state.arrFind
+    }
+  },
+
+  actions: {
+    find ({ state, commit }, search) {
+      if (!search) return commit('updateFind', [])
+      const arrFind = Object.values(state.events).filter(i => Object.values(i).find(i => i.includes(search)))
+      commit('updateFind', arrFind)
     }
   }
 
